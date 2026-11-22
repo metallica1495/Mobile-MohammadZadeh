@@ -29,8 +29,9 @@ class HomePage extends HookConsumerWidget {
     final theme = Theme.of(context);
     final brandRotation = useAnimationController(duration: const Duration(milliseconds: 1800));
     final connectionStatus = ref.watch(connectionNotifierProvider).valueOrNull;
-    final animateBrand = connectionStatus is Connecting || connectionStatus is Waiting ||
-        connectionStatus is Connected || connectionStatus is HotReloading;
+    // Animate for the entire time the core is starting or running, including
+    // the no-working-proxies state. Stop only when the tunnel is actually down.
+    final animateBrand = connectionStatus is Connecting || (connectionStatus?.isRunning ?? false);
     final audioEnabled = useState(true);
     final brandAudioPlayer = useMemoized(AudioPlayer.new);
     useEffect(() {
@@ -243,10 +244,14 @@ class HomePage extends HookConsumerWidget {
                                       animation: brandRotation,
                                       builder: (context, child) {
                                         final phase = brandRotation.value * math.pi * 2;
-                                        final tilt = animateBrand ? math.sin(phase) * .62 : 0.0;
+                                        // One complete 360-degree Y-axis revolution per
+                                        // controller cycle. The small X tilt adds perspective,
+                                        // but never replaces the full rotation.
+                                        final tilt = animateBrand ? math.sin(phase) * .10 : 0.0;
                                         final matrix = Matrix4.identity()
                                           ..setEntry(3, 2, .0018)
-                                          ..rotateY(tilt);
+                                          ..rotateX(tilt)
+                                          ..rotateY(phase);
                                         final sparkle = animateBrand ? (.55 + .45 * (math.sin(phase * 2) + 1) / 2) : .72;
                                         return Transform(
                                           alignment: Alignment.center,
