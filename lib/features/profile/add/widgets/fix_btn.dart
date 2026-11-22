@@ -28,14 +28,28 @@ class FixBtn extends ConsumerWidget {
           constraints: BoxConstraints(minHeight: height),
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
           decoration: BoxDecoration(
+            color: theme.colorScheme.surfaceContainerLow,
             borderRadius: borderRadius,
             border: Border.all(color: theme.colorScheme.outlineVariant),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: isMobile ? 32 : 40, color: color),
-              Gap(isMobile ? 4 : 8),
+              Container(
+                width: isMobile ? 48 : 56,
+                height: isMobile ? 48 : 56,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                alignment: Alignment.center,
+                child: Icon(
+                  icon,
+                  size: isMobile ? 27 : 32,
+                  color: theme.colorScheme.onPrimaryContainer,
+                ),
+              ),
+              Gap(isMobile ? 8 : 10),
               Text(
                 title,
                 style: isMobile
