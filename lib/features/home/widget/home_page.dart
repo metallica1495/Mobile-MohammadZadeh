@@ -223,38 +223,12 @@ class HomePage extends HookConsumerWidget {
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Container(
-                                      width: 74,
-                                      height: 74,
-                                      decoration: BoxDecoration(
-                                        border: Border.all(color: const Color(0xFFD6A63A), width: 2),
-                                        borderRadius: BorderRadius.circular(22),
-                                        gradient: const LinearGradient(
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                          colors: [Color(0xFF3A2A0B), Color(0xFF090909), Color(0xFF241804)],
-                                        ),
-                                      ),
-                                      alignment: Alignment.center,
-                                      child: const Text(
-                                        'SM',
-                                        style: TextStyle(
-                                          color: Color(0xFFFFD36A),
-                                          fontSize: 34,
-                                          fontWeight: FontWeight.w900,
-                                          letterSpacing: -3,
-                                        ),
-                                      ),
-                                    ),
-                                    const Gap(12),
-                                    const Text(
-                                      'موبایل سیروس محمدزاده',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        color: Color(0xFFFFD36A),
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w800,
-                                      ),
+                                    Image.asset(
+                                      'assets/images/mobile_sirus_brand_logo.webp',
+                                      width: 190,
+                                      height: 190,
+                                      fit: BoxFit.contain,
+                                      filterQuality: FilterQuality.high,
                                     ),
                                     const Gap(4),
                                     const Text(
