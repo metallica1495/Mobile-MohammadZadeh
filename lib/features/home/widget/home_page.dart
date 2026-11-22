@@ -46,7 +46,8 @@ class HomePage extends HookConsumerWidget {
     }, const []);
     useEffect(() {
       if (animateBrand) {
-        brandRotation.repeat();
+        // A fast, unmistakable full turn while the tunnel is starting or running.
+        brandRotation.repeat(period: const Duration(milliseconds: 1250));
       } else {
         brandRotation.stop();
         brandRotation.value = 0;
@@ -247,9 +248,9 @@ class HomePage extends HookConsumerWidget {
                                         // One complete 360-degree Y-axis revolution per
                                         // controller cycle. The small X tilt adds perspective,
                                         // but never replaces the full rotation.
-                                        final tilt = animateBrand ? math.sin(phase) * .10 : 0.0;
+                                        final tilt = animateBrand ? math.sin(phase) * .16 : 0.0;
                                         final matrix = Matrix4.identity()
-                                          ..setEntry(3, 2, .0018)
+                                          ..setEntry(3, 2, .0028)
                                           ..rotateX(tilt)
                                           ..rotateY(phase);
                                         final sparkle = animateBrand ? (.55 + .45 * (math.sin(phase * 2) + 1) / 2) : .72;
@@ -273,12 +274,18 @@ class HomePage extends HookConsumerWidget {
                                                 Positioned(
                                                   top: 1,
                                                   left: 1,
-                                                  child: Opacity(opacity: sparkle, child: const Icon(Icons.auto_awesome, color: Color(0xFFFFD76A), size: 23)),
+                                                  child: Transform.rotate(
+                                                    angle: phase,
+                                                    child: Opacity(opacity: sparkle, child: const Icon(Icons.auto_awesome, color: Color(0xFFFFD76A), size: 27)),
+                                                  ),
                                                 ),
                                                 Positioned(
                                                   top: 1,
                                                   right: 1,
-                                                  child: Opacity(opacity: sparkle, child: const Icon(Icons.star_rounded, color: Color(0xFFFFE7A0), size: 21)),
+                                                  child: Transform.rotate(
+                                                    angle: -phase * 1.4,
+                                                    child: Opacity(opacity: sparkle, child: const Icon(Icons.star_rounded, color: Color(0xFFFFE7A0), size: 25)),
+                                                  ),
                                                 ),
                                                 Positioned(
                                                   bottom: 1,
