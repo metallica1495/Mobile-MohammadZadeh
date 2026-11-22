@@ -14,7 +14,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  audioplayers: ^6.8.1
+  audioplayers: ^6.7.1
   # Debug-only, like accessibility_tools: the two lib/main*.dart entrypoints
   # gate it behind kDebugMode, so release builds tree-shake it away.
   flutter_driver:
