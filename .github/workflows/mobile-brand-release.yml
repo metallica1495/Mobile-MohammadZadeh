@@ -1,0 +1,95 @@
+name: Mobile MohammadZadeh Android Release
+
+on:
+  push:
+    branches:
+      - branding/mobile-mohammadzadeh
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mobile-android-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-release:
+    name: Build Android APK and publish GitHub Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      CHANNEL: dev
+    steps:
+      - name: Checkout branded branch
+        uses: actions/checkout@v6
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: zulu
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
+        with:
+          packages: platform-tools
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@fd55f4c5af5b953cc57a2be44cb082c8f6635e8e # v2.21.0
+        with:
+          flutter-version: 3.38.5
+          channel: stable
+          cache: true
+
+      - name: Prepare Flutter packages and Android core
+        run: make android-apk-prepare
+
+      - name: Build release APKs
+        run: |
+          flutter build apk --release --target lib/main.dart \
+            --dart-define=commit=${GITHUB_SHA}
+          test -d build/app/outputs/flutter-apk
+          mkdir -p release-assets
+          find build/app/outputs/flutter-apk -maxdepth 1 -type f -name '*.apk' -print0 \
+            | while IFS= read -r -d '' apk; do
+                cp "$apk" "release-assets/Mobile-Sirus-Mohammadzadeh-$(basename "$apk")"
+              done
+          test -n "$(find release-assets -maxdepth 1 -type f -name '*.apk' -print -quit)"
+          ls -lh release-assets
+
+      - name: Read app version
+        id: version
+        run: |
+          version="$(sed -n 's/^version: *\([^+]*\).*/\1/p' pubspec.yaml)"
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+
+      - name: Upload APK build artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: Mobile-Sirus-Mohammadzadeh-Android-v${{ steps.version.outputs.version }}
+          path: release-assets/*.apk
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Publish versioned GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          notes="نسخه اندروید موبایل سیروس محمدزاده - نسخه $VERSION
+
+          شامل فایل‌های APK برای معماری‌های پشتیبانی‌شده اندروید.
+          شناسه بسته: com.mobilemohammadzadeh.client
+          شماره ساخت از pubspec.yaml خوانده شده است."
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" release-assets/*.apk --clobber
+          else
+            gh release create "$TAG" release-assets/*.apk \
+              --title "موبایل سیروس محمدزاده $VERSION" \
+              --notes "$notes" \
+              --target "$GITHUB_SHA"
+          fi
