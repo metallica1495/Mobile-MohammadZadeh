@@ -165,6 +165,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/audio/mobile_sirus_brand_sting.mp3
+    - assets/images/mobile_sirus_brand_logo.webp
     # - assets/core/geoip.db
     # - assets/core/geosite.db
     - assets/images/logo.svg
