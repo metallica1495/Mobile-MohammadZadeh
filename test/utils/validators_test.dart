@@ -2,6 +2,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hiddify/utils/validators.dart';
 
 void main() {
+  group('isUrl subscription schemes', () {
+    test('accepts HTTP and HTTPS subscription URLs', () {
+      for (final value in ['http://example.com/sub', 'https://example.com/sub']) {
+        expect(isUrl(value), isTrue, reason: value);
+      }
+    });
+  });
+
   group('isDomainSuffix', () {
     test('accepts what sing-box domain_suffix takes', () {
       for (final value in ['.com', '.ir', 'ir', 'noon.com', '.noon.com', 'mtalk.google.com', 'xn--mgba3a4f16a.ir']) {
