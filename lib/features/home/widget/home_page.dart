@@ -1,5 +1,9 @@
+import 'dart:async';
+
+import 'package:audioplayers/audioplayers.dart';
 import 'package:dartx/dartx.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:gap/gap.dart';
 import 'package:hiddify/core/app_info/app_info_provider.dart';
 import 'package:hiddify/core/localization/translations.dart';
@@ -20,6 +24,21 @@ class HomePage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final brandRotation = useAnimationController(duration: const Duration(milliseconds: 1500));
+    final audioEnabled = useState(true);
+    final brandAudioPlayer = useMemoized(AudioPlayer.new);
+    useEffect(() {
+      brandRotation.forward();
+      if (audioEnabled.value) {
+        unawaited(brandAudioPlayer.setReleaseMode(ReleaseMode.stop));
+        unawaited(brandAudioPlayer.play(
+          AssetSource('audio/mobile_sirus_brand_sting.mp3'),
+          volume: 0.55,
+        ));
+      }
+      return null;
+    }, const []);
+    useEffect(() => () => brandAudioPlayer.dispose(), [brandAudioPlayer]);
     final t = ref.watch(translationsProvider).requireValue;
     // final hasAnyProfile = ref.watch(hasAnyProfileProvider);
     final activeProfile = ref.watch(activeProfileProvider);
@@ -77,6 +96,24 @@ class HomePage extends HookConsumerWidget {
           ],
         ),
         actions: [
+          IconButton(
+            tooltip: audioEnabled.value ? 'قطع صدای معرفی' : 'پخش صدای معرفی',
+            onPressed: () {
+              audioEnabled.value = !audioEnabled.value;
+              if (audioEnabled.value) {
+                unawaited(brandAudioPlayer.play(
+                  AssetSource('audio/mobile_sirus_brand_sting.mp3'),
+                  volume: 0.55,
+                ));
+              } else {
+                unawaited(brandAudioPlayer.stop());
+              }
+            },
+            icon: Icon(
+              audioEnabled.value ? Icons.volume_up_rounded : Icons.volume_off_rounded,
+              color: const Color(0xFFD6A63A),
+            ),
+          ),
           // IconButton(
           //     onPressed: () => const QuickSettingsRoute().push(context),
           //     icon: const Icon(FluentIcons.options_24_filled),
@@ -168,7 +205,11 @@ class HomePage extends HookConsumerWidget {
                           children: [
                             Padding(
                               padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
-                              child: Container(
+                              child: RotationTransition(
+                                turns: Tween<double>(begin: 0, end: 1).animate(
+                                  CurvedAnimation(parent: brandRotation, curve: Curves.easeInOutCubic),
+                                ),
+                                child: Container(
                                 width: double.infinity,
                                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
                                 decoration: BoxDecoration(
@@ -222,6 +263,7 @@ class HomePage extends HookConsumerWidget {
                                       style: TextStyle(color: Color(0xFFBFA66D), fontSize: 12),
                                     ),
                                   ],
+                                ),
                                 ),
                               ),
                             ),
