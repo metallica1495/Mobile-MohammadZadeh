@@ -36,17 +36,25 @@ class HomePage extends HookConsumerWidget {
         title: Row(
           children: [
             Container(
-              width: 36,
-              height: 36,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
-                color: theme.colorScheme.primaryContainer,
+                color: const Color(0xFF090909),
                 borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFD6A63A), width: 1.5),
+                boxShadow: const [
+                  BoxShadow(color: Color(0x33D6A63A), blurRadius: 8, spreadRadius: 1),
+                ],
               ),
               alignment: Alignment.center,
-              child: Icon(
-                Icons.shield_moon_rounded,
-                size: 22,
-                color: theme.colorScheme.onPrimaryContainer,
+              child: const Text(
+                'SM',
+                style: TextStyle(
+                  color: Color(0xFFFFD36A),
+                  fontSize: 17,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -1.5,
+                ),
               ),
             ),
             const Gap(10),
@@ -158,6 +166,65 @@ class HomePage extends HookConsumerWidget {
                         // AsyncData(value: final profile?) =>
                         MultiSliver(
                           children: [
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF080808),
+                                  borderRadius: BorderRadius.circular(22),
+                                  border: Border.all(color: const Color(0xFFD6A63A), width: 1.2),
+                                  boxShadow: const [
+                                    BoxShadow(color: Color(0x26000000), blurRadius: 16, offset: Offset(0, 6)),
+                                  ],
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: 74,
+                                      height: 74,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: const Color(0xFFD6A63A), width: 2),
+                                        borderRadius: BorderRadius.circular(22),
+                                        gradient: const LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: [Color(0xFF3A2A0B), Color(0xFF090909), Color(0xFF241804)],
+                                        ),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: const Text(
+                                        'SM',
+                                        style: TextStyle(
+                                          color: Color(0xFFFFD36A),
+                                          fontSize: 34,
+                                          fontWeight: FontWeight.w900,
+                                          letterSpacing: -3,
+                                        ),
+                                      ),
+                                    ),
+                                    const Gap(12),
+                                    const Text(
+                                      'موبایل سیروس محمدزاده',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: Color(0xFFFFD36A),
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                    const Gap(4),
+                                    const Text(
+                                      'خدمات و پشتیبانی موبایل',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(color: Color(0xFFBFA66D), fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                             // const Gap(100),
                             switch (activeProfile) {
                               AsyncData(value: final profile?) => ProfileTile(
