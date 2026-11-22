@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:dartx/dartx.dart';
@@ -10,6 +11,8 @@ import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/core/model/constants.dart';
 import 'package:hiddify/core/router/bottom_sheets/bottom_sheets_notifier.dart';
 import 'package:hiddify/features/home/widget/connection_button.dart';
+import 'package:hiddify/features/connection/model/connection_status.dart';
+import 'package:hiddify/features/connection/notifier/connection_notifier.dart';
 import 'package:hiddify/features/home/widget/local_proxy_hint.dart';
 import 'package:hiddify/features/profile/notifier/active_profile_notifier.dart';
 import 'package:hiddify/features/profile/widget/profile_tile.dart';
@@ -24,11 +27,13 @@ class HomePage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final brandRotation = useAnimationController(duration: const Duration(milliseconds: 1500));
+    final brandRotation = useAnimationController(duration: const Duration(milliseconds: 1800));
+    final connectionStatus = ref.watch(connectionNotifierProvider).valueOrNull;
+    final animateBrand = connectionStatus is Connecting || connectionStatus is Waiting ||
+        connectionStatus is Connected || connectionStatus is HotReloading;
     final audioEnabled = useState(true);
     final brandAudioPlayer = useMemoized(AudioPlayer.new);
     useEffect(() {
-      brandRotation.forward();
       if (audioEnabled.value) {
         unawaited(brandAudioPlayer.setReleaseMode(ReleaseMode.stop));
         unawaited(brandAudioPlayer.play(
@@ -38,6 +43,15 @@ class HomePage extends HookConsumerWidget {
       }
       return null;
     }, const []);
+    useEffect(() {
+      if (animateBrand) {
+        brandRotation.repeat();
+      } else {
+        brandRotation.stop();
+        brandRotation.value = 0;
+      }
+      return null;
+    }, [animateBrand]);
     useEffect(() => () => brandAudioPlayer.dispose(), [brandAudioPlayer]);
     final t = ref.watch(translationsProvider).requireValue;
     // final hasAnyProfile = ref.watch(hasAnyProfileProvider);
@@ -205,30 +219,77 @@ class HomePage extends HookConsumerWidget {
                           children: [
                             Padding(
                               padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
-                              child: RotationTransition(
-                                turns: Tween<double>(begin: 0, end: 1).animate(
-                                  CurvedAnimation(parent: brandRotation, curve: Curves.easeInOutCubic),
-                                ),
-                                child: Container(
+                              child: Container(
                                 width: double.infinity,
                                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFF080808),
                                   borderRadius: BorderRadius.circular(22),
                                   border: Border.all(color: const Color(0xFFD6A63A), width: 1.2),
-                                  boxShadow: const [
-                                    BoxShadow(color: Color(0x26000000), blurRadius: 16, offset: Offset(0, 6)),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFFFFC247).withValues(alpha: animateBrand ? .28 : .10),
+                                      blurRadius: animateBrand ? 30 : 16,
+                                      spreadRadius: animateBrand ? 3 : 0,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                    const BoxShadow(color: Color(0x26000000), blurRadius: 16, offset: Offset(0, 6)),
                                   ],
                                 ),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Image.asset(
-                                      'assets/images/mobile_sirus_brand_logo.webp',
-                                      width: 190,
-                                      height: 190,
-                                      fit: BoxFit.contain,
-                                      filterQuality: FilterQuality.high,
+                                    AnimatedBuilder(
+                                      animation: brandRotation,
+                                      builder: (context, child) {
+                                        final phase = brandRotation.value * math.pi * 2;
+                                        final tilt = animateBrand ? math.sin(phase) * .62 : 0.0;
+                                        final matrix = Matrix4.identity()
+                                          ..setEntry(3, 2, .0018)
+                                          ..rotateY(tilt);
+                                        final sparkle = animateBrand ? (.55 + .45 * (math.sin(phase * 2) + 1) / 2) : .72;
+                                        return Transform(
+                                          alignment: Alignment.center,
+                                          transform: matrix,
+                                          child: SizedBox(
+                                            width: 220,
+                                            height: 220,
+                                            child: Stack(
+                                              alignment: Alignment.center,
+                                              clipBehavior: Clip.none,
+                                              children: [
+                                                Image.asset(
+                                                  'assets/images/mobile_sirus_brand_logo.webp',
+                                                  width: 206,
+                                                  height: 206,
+                                                  fit: BoxFit.contain,
+                                                  filterQuality: FilterQuality.high,
+                                                ),
+                                                Positioned(
+                                                  top: 1,
+                                                  left: 1,
+                                                  child: Opacity(opacity: sparkle, child: const Icon(Icons.auto_awesome, color: Color(0xFFFFD76A), size: 23)),
+                                                ),
+                                                Positioned(
+                                                  top: 1,
+                                                  right: 1,
+                                                  child: Opacity(opacity: sparkle, child: const Icon(Icons.star_rounded, color: Color(0xFFFFE7A0), size: 21)),
+                                                ),
+                                                Positioned(
+                                                  bottom: 1,
+                                                  left: 1,
+                                                  child: Opacity(opacity: sparkle, child: const Icon(Icons.star_rounded, color: Color(0xFFFFE7A0), size: 21)),
+                                                ),
+                                                Positioned(
+                                                  bottom: 1,
+                                                  right: 1,
+                                                  child: Opacity(opacity: sparkle, child: const Icon(Icons.auto_awesome, color: Color(0xFFFFD76A), size: 23)),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      },
                                     ),
                                     const Gap(4),
                                     const Text(
@@ -237,7 +298,6 @@ class HomePage extends HookConsumerWidget {
                                       style: TextStyle(color: Color(0xFFBFA66D), fontSize: 12),
                                     ),
                                   ],
-                                ),
                                 ),
                               ),
                             ),
