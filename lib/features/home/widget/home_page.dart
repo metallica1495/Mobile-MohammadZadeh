@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:dartx/dartx.dart';
@@ -11,6 +10,7 @@ import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/core/model/constants.dart';
 import 'package:hiddify/core/router/bottom_sheets/bottom_sheets_notifier.dart';
 import 'package:hiddify/features/home/widget/connection_button.dart';
+import 'package:hiddify/features/home/widget/brand_logo_animation.dart';
 import 'package:hiddify/features/connection/model/connection_status.dart';
 import 'package:hiddify/features/connection/notifier/connection_notifier.dart';
 import 'package:hiddify/features/home/widget/local_proxy_hint.dart';
@@ -27,7 +27,6 @@ class HomePage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final brandRotation = useAnimationController(duration: const Duration(milliseconds: 1800));
     final connectionStatus = ref.watch(connectionNotifierProvider).valueOrNull;
     // Animate for the entire time the core is starting or running, including
     // the no-working-proxies state. Stop only when the tunnel is actually down.
@@ -44,16 +43,6 @@ class HomePage extends HookConsumerWidget {
       }
       return null;
     }, const []);
-    useEffect(() {
-      if (animateBrand) {
-        // A fast, unmistakable full turn while the tunnel is starting or running.
-        brandRotation.repeat(period: const Duration(milliseconds: 1250));
-      } else {
-        brandRotation.stop();
-        brandRotation.value = 0;
-      }
-      return null;
-    }, [animateBrand]);
     useEffect(() => () => brandAudioPlayer.dispose(), [brandAudioPlayer]);
     final t = ref.watch(translationsProvider).requireValue;
     // final hasAnyProfile = ref.watch(hasAnyProfileProvider);
@@ -241,68 +230,7 @@ class HomePage extends HookConsumerWidget {
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    AnimatedBuilder(
-                                      animation: brandRotation,
-                                      builder: (context, child) {
-                                        final phase = brandRotation.value * math.pi * 2;
-                                        // One complete 360-degree Y-axis revolution per
-                                        // controller cycle. The small X tilt adds perspective,
-                                        // but never replaces the full rotation.
-                                        final tilt = animateBrand ? math.sin(phase) * .16 : 0.0;
-                                        final matrix = Matrix4.identity()
-                                          ..setEntry(3, 2, .0028)
-                                          ..rotateX(tilt)
-                                          ..rotateY(phase);
-                                        final sparkle = animateBrand ? (.55 + .45 * (math.sin(phase * 2) + 1) / 2) : .72;
-                                        return Transform(
-                                          alignment: Alignment.center,
-                                          transform: matrix,
-                                          child: SizedBox(
-                                            width: 220,
-                                            height: 220,
-                                            child: Stack(
-                                              alignment: Alignment.center,
-                                              clipBehavior: Clip.none,
-                                              children: [
-                                                Image.asset(
-                                                  'assets/images/mobile_sirus_brand_logo.webp',
-                                                  width: 206,
-                                                  height: 206,
-                                                  fit: BoxFit.contain,
-                                                  filterQuality: FilterQuality.high,
-                                                ),
-                                                Positioned(
-                                                  top: 1,
-                                                  left: 1,
-                                                  child: Transform.rotate(
-                                                    angle: phase,
-                                                    child: Opacity(opacity: sparkle, child: const Icon(Icons.auto_awesome, color: Color(0xFFFFD76A), size: 27)),
-                                                  ),
-                                                ),
-                                                Positioned(
-                                                  top: 1,
-                                                  right: 1,
-                                                  child: Transform.rotate(
-                                                    angle: -phase * 1.4,
-                                                    child: Opacity(opacity: sparkle, child: const Icon(Icons.star_rounded, color: Color(0xFFFFE7A0), size: 25)),
-                                                  ),
-                                                ),
-                                                Positioned(
-                                                  bottom: 1,
-                                                  left: 1,
-                                                  child: Opacity(opacity: sparkle, child: const Icon(Icons.star_rounded, color: Color(0xFFFFE7A0), size: 21)),
-                                                ),
-                                                Positioned(
-                                                  bottom: 1,
-                                                  right: 1,
-                                                  child: Opacity(opacity: sparkle, child: const Icon(Icons.auto_awesome, color: Color(0xFFFFD76A), size: 23)),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    ),
+                                    const BrandLogoAnimation(isAnimating: true),
                                     const Gap(4),
                                     const Text(
                                       'خدمات و پشتیبانی موبایل',
