@@ -230,7 +230,7 @@ class HomePage extends HookConsumerWidget {
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const BrandLogoAnimation(isAnimating: true),
+                                    BrandLogoAnimation(isAnimating: animateBrand),
                                     const Gap(4),
                                     const Text(
                                       'خدمات و پشتیبانی موبایل',
